@@ -1,0 +1,6 @@
+﻿input_text,generic_label,generic_score,finetuned_a_label,finetuned_a_score,finetuned_b_label,finetuned_b_score,winner,notes,tested_at
+"Wire transfer of $47,500 from Chase Bank account initiated from new device — destination: Lagos — account opened 3 days ago",NEGATIVE,0.9758,LABEL_1,0.5040,neutral,0.8724,,,
+"Monthly salary deposit of $4,200 processed — expected amount from known employer",NEGATIVE,0.9544,LABEL_0,0.7308,neutral,0.8324,,,
+Credit card belonging to David Kim used for 12 transactions in 4 countries within 6 hours — cardholder in Miami,NEGATIVE,0.9170,LABEL_0,0.7229,neutral,0.9454,,,
+Insurance claim filed by Margaret Chen for vehicle theft — same VIN reported stolen twice in 14 months,NEGATIVE,0.9839,LABEL_0,0.8611,neutral,0.5200,,,
+POS terminal at QuickMart Brooklyn location processed 340 identical $49.99 transactions in single overnight shift,NEGATIVE,0.9959,LABEL_0,0.5580,neutral,0.8382,,,

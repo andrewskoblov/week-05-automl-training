@@ -1,0 +1,595 @@
+{
+  "name": "Week 5 - Generic vs Fine-Tuned Comparison",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appImJdnlp6SOYtw3",
+          "mode": "list",
+          "cachedResultName": "Week 5 Model Training",
+          "cachedResultUrl": "https://airtable.com/appImJdnlp6SOYtw3"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblEp9WCSXH6T50kt",
+          "mode": "list",
+          "cachedResultName": "Fine-Tuned Comparison",
+          "cachedResultUrl": "https://airtable.com/appImJdnlp6SOYtw3/tblEp9WCSXH6T50kt"
+        },
+        "filterByFormula": "{input_text} != \"\"",
+        "options": {}
+      },
+      "id": "16a7d76e-aef7-4662-b79a-d2cec08a3e6d",
+      "name": "Search records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -128
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "gqm2wT8a16UiGQFy",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "66f6dafc-4e5c-4d8b-9bdb-29aba6813d15",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        80,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "huggingFaceApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "={{ $json.input_text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "0b2a4fbc-5f29-4135-adb7-0005263f7580",
+      "name": "Generic Sentiment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        304,
+        -240
+      ],
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "iVEXJ3iKjhODIDMn",
+          "name": "Hugging Face account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/hf-inference/models/mrm8488/bert-tiny-finetuned-sms-spam-detection",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "huggingFaceApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "={{ $('Search records').item.json.input_text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b0df4344-83b8-46fa-9d10-ec380820f2d4",
+      "name": "Fine-Tuned A",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        304,
+        -128
+      ],
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "iVEXJ3iKjhODIDMn",
+          "name": "Hugging Face account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/hf-inference/models/cardiffnlp/twitter-roberta-base-sentiment-latest",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "huggingFaceApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "={{ $('Search records').item.json.input_text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "63370674-f879-4ea9-b6ef-6e8953a1dedc",
+      "name": "Fine-Tuned B",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        304,
+        0
+      ],
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "iVEXJ3iKjhODIDMn",
+          "name": "Hugging Face account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "generic_label",
+              "stringValue": "={{ $json[0].label }}"
+            },
+            {
+              "name": "generic_score",
+              "stringValue": "={{ $json[0].score }}"
+            },
+            {
+              "name": "input_text",
+              "stringValue": "={{ $('Search records').item.json.input_text }}"
+            },
+            {
+              "name": "record_id",
+              "stringValue": "={{ $('Search records').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6daf4723-c8e7-4abd-bba7-0d0e551f34f2",
+      "name": "Extract Generic",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        544,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "finetuned_a_label",
+              "stringValue": "={{ $json[0].label }}"
+            },
+            {
+              "name": "finetuned_a_score",
+              "stringValue": "={{ $json[0].score }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3132110e-8686-43d9-8bf8-d262d25d0bb7",
+      "name": "Extract Fine-Tuned A",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        544,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "finetuned_b_label",
+              "stringValue": "={{ $json[0].label }}"
+            },
+            {
+              "name": "finetuned_b_score",
+              "stringValue": "={{ $json[0].score }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "93ea96fc-c5cd-4d12-bb54-26821139cb6b",
+      "name": "Extract Fine-Tuned B",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        544,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "id": "3cdb57e6-16b5-486e-8c05-e1970cc5bf00",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        768,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "=appImJdnlp6SOYtw3",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblEp9WCSXH6T50kt",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.record_id }}",
+            "generic_label": "={{ $json.generic_label }}",
+            "finetuned_a_label": "={{ $json.finetuned_a_label }}",
+            "generic_score": "={{ $json.generic_score }}",
+            "finetuned_a_score": "={{ $json.finetuned_a_score }}",
+            "finetuned_b_label": "={{ $json.finetuned_b_label }}",
+            "finetuned_b_score": "={{ $json.finetuned_b_score }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "input_text",
+              "displayName": "input_text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "generic_label",
+              "displayName": "generic_label",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "generic_score",
+              "displayName": "generic_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "finetuned_a_label",
+              "displayName": "finetuned_a_label",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "finetuned_a_score",
+              "displayName": "finetuned_a_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "finetuned_b_label",
+              "displayName": "finetuned_b_label",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "finetuned_b_score",
+              "displayName": "finetuned_b_score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "winner",
+              "displayName": "winner",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "tested_at",
+              "displayName": "tested_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9f6d8bb9-d5bb-40fc-9785-a0e1a928daa3",
+      "name": "Update Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        944,
+        112
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "gqm2wT8a16UiGQFy",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -128
+      ],
+      "id": "77547a35-ebd4-4ac3-b9d0-64da0ac14692",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Generic Sentiment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fine-Tuned A",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fine-Tuned B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generic Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Extract Generic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fine-Tuned A": {
+      "main": [
+        [
+          {
+            "node": "Extract Fine-Tuned A",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fine-Tuned B": {
+      "main": [
+        [
+          {
+            "node": "Extract Fine-Tuned B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Generic": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Fine-Tuned A": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Update Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Fine-Tuned B": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Record": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f7e46ca7-94dd-4b92-88a5-80d2cb7dfeba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a69ec37954977b88a479ebfa185a30fc778ae1a13872bdbe9e26e7b8edafd875"
+  },
+  "id": "yT8jgRFMyovFW1C0",
+  "tags": []
+}
